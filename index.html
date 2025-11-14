@@ -1,388 +1,238 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>File Explorer</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-  <style>
-    :root {
-      --bg: #f8f9fa;
-      --card: #ffffff;
-      --primary: #0078d4;
-      --text: #333;
-      --border: #e1e1e1;
-      --hover: #f0f0f0;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #1e1e1e;
-        --card: #2d2d2d;
-        --text: #e0e0e0;
-        --border: #444;
-        --hover: #383838;
-      }
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      padding: 10px;
-      height: 100vh;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .header {
-      background: var(--card);
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      font-size: 14px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-
-    .path {
-      flex: 1;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .path span {
-      color: var(--primary);
-      cursor: pointer;
-    }
-
-    .path span:hover { text-decoration: underline; }
-
-    .back-btn {
-      background: none;
-      border: none;
-      font-size: 18px;
-      color: var(--text);
-      cursor: pointer;
-      padding: 4px 8px;
-      border-radius: 4px;
-    }
-
-    .back-btn:hover { background: var(--hover); }
-
-    .view-toggle {
-      display: flex;
-      gap: 5px;
-    }
-
-    .view-btn {
-      background: none;
-      border: 1px solid var(--border);
-      padding: 6px 10px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-
-    .view-btn.active {
-      background: var(--primary);
-      color: white;
-      border-color: var(--primary);
-    }
-
-    .container {
-      flex: 1;
-      overflow-y: auto;
-      padding: 16px;
-    }
-
-    .files-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      gap: 16px;
-    }
-
-    .files-list {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .file-item {
-      background: var(--card);
-      border-radius: 8px;
-      padding: 12px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s;
-      border: 1px solid transparent;
-      user-select: none;
-    }
-
-    .file-item:hover {
-      background: var(--hover);
-      border-color: var(--primary);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    .file-item.folder {
-      color: #ffb900;
-    }
-
-    .file-item i {
-      font-size: 36px;
-      margin-bottom: 8px;
-      display: block;
-    }
-
-    .file-name {
-      font-size: 12px;
-      word-break: break-word;
-      margin-top: 4px;
-      color: var(--text);
-    }
-
-    .file-item.list {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      text-align: left;
-      padding: 8px 12px;
-    }
-
-    .file-item.list i {
-      font-size: 24px;
-      width: 30px;
-    }
-
-    .empty {
-      text-align: center;
-      padding: 40px;
-      color: #888;
-      font-size: 14px;
-    }
-
-    @media (max-width: 600px) {
-      .files-grid {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        gap: 12px;
-      }
-      .header {
-        font-size: 13px;
-        padding: 10px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Explorer - Semua File Otomatis</title>
+    <style>
+        :root {
+            --primary: #3498db;
+            --bg: #f8f9fa;
+            --card: #fff;
+            --text: #333;
+            --border: #e0e0e0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: var(--bg); color: var(--text); padding: 20px; }
+        .container { max-width: 1200px; margin: auto; }
+        header { background: #2c3e50; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        h1 { font-size: 1.8rem; }
+        .search { display: flex; gap: 10px; margin: 15px 0; flex-wrap: wrap; }
+        input, select, button {
+            padding: 10px; border: 1px solid var(--border); border-radius: 5px; font-size: 1rem;
+        }
+        button { background: var(--primary); color: white; border: none; cursor: pointer; }
+        button:hover { background: #2980b9; }
+        .stats { display: flex; gap: 15px; flex-wrap: wrap; margin: 20px 0; }
+        .stat { background: var(--card); padding: 15px; border-radius: 8px; flex: 1; min-width: 120px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .stat-value { font-size: 1.8rem; font-weight: bold; color: var(--primary); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+        .card { background: var(--card); border-radius: 8px; overflow: hidden; box-shadow: 0 3px 8px rgba(0,0,0,0.1); cursor: pointer; transition: 0.3s; }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 6px 16px rgba(0,0,0,0.15); }
+        .icon { height: 100px; background: #f1f8ff; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; }
+        .info { padding: 12px; }
+        .name { font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .details { font-size: 0.85rem; color: #666; display: flex; justify-content: space-between; margin: 5px 0; }
+        .type { padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-top: 6px; display: inline-block; }
+        .type-image { background: #e8f5e9; color: #2e7d32; }
+        .type-document { background: #e3f2fd; color: #1565c0; }
+        .type-video { background: #e8eaf6; color: #283593; }
+        .type-audio { background: #fff3e0; color: #ef6c00; }
+        .type-archive { background: #fce4ec; color: #c2185b; }
+        .type-folder { background: #fff9c4; color: #f57f17; }
+        .type-other { background: #f5f5f5; color: #616161; }
+        .preview { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 999; justify-content: center; align-items: center; padding: 20px; }
+        .preview-content { background: white; border-radius: 8px; max-width: 90%; max-height: 90%; overflow: auto; padding: 20px; position: relative; }
+        .close { position: absolute; top: 10px; right: 15px; font-size: 1.8rem; cursor: pointer; color: #999; }
+        .preview img, .preview video, .preview iframe { max-width: 100%; max-height: 70vh; }
+        .loading { text-align: center; padding: 40px; color: #666; }
+        .spinner { border: 4px solid #f0f0f0; border-left: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 480px) { .grid { grid-template-columns: 1fr; } }
+    </style>
 </head>
 <body>
 
-  <div class="header">
-    <button class="back-btn" id="backBtn" style="display:none;">
-      <i class="fas fa-arrow-left"></i>
-    </button>
-    <div class="path" id="pathDisplay">/</div>
-    <div class="view-toggle">
-      <button class="view-btn active" id="gridView"><i class="fas fa-th"></i></button>
-      <button class="view-btn" id="listView"><i class="fas fa-list"></i></button>
+<div class="container">
+    <header>
+        <h1>File Explorer Otomatis</h1>
+        <p>Semua file & folder di direktori ini akan otomatis terbaca</p>
+    </header>
+
+    <div class="search">
+        <input type="text" id="search" placeholder="Cari file...">
+        <select id="filter">
+            <option value="">Semua</option>
+            <option value="image">Gambar</option>
+            <option value="document">Dokumen</option>
+            <option value="video">Video</option>
+            <option value="audio">Audio</option>
+            <option value="folder">Folder</option>
+        </select>
+        <button id="refresh">Refresh</button>
     </div>
-  </div>
 
-  <div class="container" id="container">
-    <div class="empty">Memuat file...</div>
-  </div>
+    <div class="stats">
+        <div class="stat"><div class="stat-value" id="count">0</div><div>File</div></div>
+        <div class="stat"><div class="stat-value" id="size">0 KB</div><div>Ukuran</div></div>
+        <div class="stat"><div class="stat-value" id="types">0</div><div>Jenis</div></div>
+    </div>
 
-  <script>
-    // Simulasi struktur folder dari file di folder yang sama
-    const currentDir = location.pathname.split('/').slice(0, -1).join('/') || '/';
-    let history = [''];
-    let currentPath = '';
+    <div id="files" class="grid">
+        <div class="loading"><div class="spinner"></div><p>Memuat file dari GitHub...</p></div>
+    </div>
+</div>
 
-    const container = document.getElementById('container');
-    const pathDisplay = document.getElementById('pathDisplay');
-    const backBtn = document.getElementById('backBtn');
-    const gridViewBtn = document.getElementById('gridView');
-    const listViewBtn = document.getElementById('listView');
+<div id="preview" class="preview">
+    <div class="preview-content">
+        <span class="close">×</span>
+        <div id="preview-body"></div>
+    </div>
+</div>
 
-    // Ekstensi → ikon
-    const fileIcons = {
-      'pdf': 'fa-file-pdf',
-      'jpg|jpeg|png|gif|webp|svg': 'fa-file-image',
-      'mp4|webm|ogg': 'fa-file-video',
-      'mp3|wav': 'fa-file-audio',
-      'txt|md|log': 'fa-file-lines',
-      'zip|rar|7z': 'fa-file-zipper',
-      'doc|docx': 'fa-file-word',
-      'xls|xlsx': 'fa-file-excel',
-      'ppt|pptx': 'fa-file-powerpoint',
-      'html|htm': 'fa-globe',
-      'js': 'fa-code',
-      'css': 'fa-paint-brush',
-      'json': 'fa-brackets-curly',
-      'default': 'fa-file'
-    };
+<script>
+    const filesDiv = document.getElementById('files');
+    const preview = document.getElementById('preview');
+    const previewBody = document.getElementById('preview-body');
+    const closeBtn = document.querySelector('.close');
 
-    function getIconClass(filename) {
-      const ext = filename.split('.').pop().toLowerCase();
-      for (const [exts, icon] of Object.entries(fileIcons)) {
-        if (exts.split('|').includes(ext)) return icon;
-      }
-      return filename.includes('.') ? fileIcons.default : 'fa-folder';
+    // Ambil semua file dari halaman direktori GitHub
+    async function loadFiles() {
+        filesDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>Memindai direktori...</p></div>';
+        
+        try {
+            const res = await fetch(location.href);
+            const html = await res.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            const links = Array.from(doc.querySelectorAll('a'))
+                .map(a => a.getAttribute('href'))
+                .filter(href => href && !href.startsWith('?') && href !== '../' && href !== '/')
+                .map(href => href.replace(/^\//, '')) // Hapus awal /
+                .filter(name => name && !name.includes('?')) // Hindari query
+                .map(name => name.endsWith('/') ? name.slice(0, -1) : name); // Hapus trailing /
+
+            const uniqueFiles = [...new Set(links)];
+            renderFiles(uniqueFiles);
+        } catch (e) {
+            filesDiv.innerHTML = `<p style="color:red; text-align:center;">Gagal membaca folder. Pastikan GitHub Pages aktif dan folder tidak kosong.</p>`;
+        }
     }
 
-    function isFolder(name) {
-      return !name.includes('.');
+    function getType(name) {
+        if (name.includes('.')) {
+            const ext = name.split('.').pop().toLowerCase();
+            if (['jpg','jpeg','png','gif','webp','svg','bmp'].includes(ext)) return 'image';
+            if (['pdf','doc','docx','txt','md','xls','xlsx','ppt','pptx'].includes(ext)) return 'document';
+            if (['mp4','webm','ogg','mov','avi'].includes(ext)) return 'video';
+            if (['mp3','wav','ogg','m4a'].includes(ext)) return 'audio';
+            return 'other';
+        }
+        return 'folder';
+    }
+
+    function getIcon(type) {
+        const icons = {
+            image: 'image', document: 'document', video: 'video', audio: 'volume_up', folder: 'folder', other: 'description'
+        };
+        return icons[type] || 'description';
     }
 
     function formatSize(bytes) {
-      if (bytes === 0) return '0 B';
-      const k = 1024;
-      const sizes = ['B', 'KB', 'MB', 'GB'];
-      const i = Math.floor(Math.log(bytes) / Math.log(k));
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        if (!bytes) return '—';
+        const units = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(1024));
+        return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + units[i];
     }
 
-    async function loadDirectory(path = '') {
-      // Karena GitHub Pages statis, kita harus "hardcode" atau pakai trik
-      // Di sini kita pakai trik: baca dari <a> yang dibuat oleh GitHub
-      try {
-        const res = await fetch(location.origin + location.pathname + path);
-        const html = await res.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const links = Array.from(doc.querySelectorAll('a'))
-          .map(a => a.getAttribute('href'))
-          .filter(h => h && !h.startsWith('..') && h !== '/' && !h.endsWith('/'))
-          .map(h => h.replace(location.pathname, '').replace(/^\//, ''));
+    function renderFiles(allFiles) {
+        const search = document.getElementById('search').value.toLowerCase();
+        const filter = document.getElementById('filter').value;
 
-        // Filter hanya file di folder ini
-        const items = links
-          .filter(name => {
-            const fullPath = path + name;
-            const depth = fullPath.split('/').filter(Boolean).length;
-            return depth === (path.split('/').filter(Boolean).length + 1);
-          });
+        let files = allFiles.filter(f => 
+            f.toLowerCase().includes(search) && 
+            (!filter || getType(f) === filter)
+        );
 
-        renderFiles(items, path);
-      } catch (e) {
-        container.innerHTML = `<div class="empty">Gagal memuat folder.</div>`;
-      }
-    }
-
-    // Alternatif: Jika trik di atas gagal, gunakan daftar manual
-    const MANUAL_FILES = [
-      "gambar.jpg",
-      "dokumen.pdf",
-      "video.mp4",
-      "data.csv",
-      "Folder Ku",
-      "Folder Ku/laporan.docx",
-      "Folder Ku/presentasi.pptx"
-    ];
-
-    function renderFiles(files, path = '') {
-      currentPath = path;
-      history = history.slice(0, history.indexOf(path) + 1);
-      if (!history.includes(path)) history.push(path);
-
-      updatePathDisplay();
-      backBtn.style.display = path ? 'block' : 'none';
-
-      if (files.length === 0) {
-        container.innerHTML = `<div class="empty">Folder kosong.</div>`;
-        return;
-      }
-
-      const isGrid = gridViewBtn.classList.contains('active');
-      const wrapper = document.createElement('div');
-      wrapper.className = isGrid ? 'files-grid' : 'files-list';
-
-      files.forEach(name => {
-        const fullName = path + name;
-        const isDir = isFolder(name) || name.endsWith('/');
-        const item = document.createElement('div');
-        item.className = `file-item ${isGrid ? '' : 'list'} ${isDir ? 'folder' : ''}`;
-        
-        const icon = getIconClass(name);
-        const displayName = name.split('/').pop();
-
-        if (isGrid) {
-          item.innerHTML = `
-            <i class="fas ${icon}"></i>
-            <div class="file-name">${displayName}</div>
-          `;
-        } else {
-          item.innerHTML = `
-            <i class="fas ${icon}"></i>
-            <div style="flex:1; font-size:14px;">${displayName}</div>
-            <div style="font-size:12px; color:#888;">${isDir ? 'Folder' : 'File'}</div>
-          `;
+        if (files.length === 0) {
+            filesDiv.innerHTML = '<p style="text-align:center; color:#666; grid-column:1/-1;">Tidak ada file ditemukan.</p>';
+            updateStats([]);
+            return;
         }
 
-        item.onclick = () => {
-          if (isDir) {
-            loadDirectory(fullName + '/');
-          } else {
-            window.open(location.href + fullName, '_blank');
-          }
-        };
+        filesDiv.innerHTML = '';
+        let totalSize = 0;
+        const types = new Set();
 
-        wrapper.appendChild(item);
-      });
+        files.forEach(name => {
+            const type = getType(name);
+            types.add(type);
 
-      container.innerHTML = '';
-      container.appendChild(wrapper);
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.onclick = () => openFile(name, type);
+
+            card.innerHTML = `
+                <div class="icon"><span class="material-icons">${getIcon(type)}</span></div>
+                <div class="info">
+                    <div class="name" title="${name}">${name}</div>
+                    <div class="details">
+                        <span>${type === 'folder' ? 'Folder' : 'File'}</span>
+                        <span>—</span>
+                    </div>
+                    <div class="type type-${type}">${type.toUpperCase()}</div>
+                </div>
+            `;
+            filesDiv.appendChild(card);
+        });
+
+        updateStats(files);
     }
 
-    function updatePathDisplay() {
-      const parts = currentPath.split('/').filter(Boolean);
-      const html = parts.length === 0 
-        ? '/' 
-        : parts.map((p, i) => {
-            const pathUpTo = parts.slice(0, i+1).join('/') + '/';
-            return `<span onclick="loadDirectory('${pathUpTo}')">${p}</span>`;
-          }).join(' / ');
-      pathDisplay.innerHTML = html || '/';
+    function updateStats(files) {
+        document.getElementById('count').textContent = files.length;
+        document.getElementById('types').textContent = new Set(files.map(getType)).size;
+        document.getElementById('size').textContent = '—';
     }
 
-    // Event Listeners
-    backBtn.onclick = () => {
-      if (history.length > 1) {
-        history.pop();
-        loadDirectory(history[history.length - 1]);
-      }
-    };
+    function openFile(name, type) {
+        if (type === 'folder') {
+            window.location.href = name + '/';
+            return;
+        }
 
-    gridViewBtn.onclick = () => {
-      gridViewBtn.classList.add('active');
-      listViewBtn.classList.remove('active');
-      renderFiles(Array.from(container.querySelectorAll('.file-item')).map(el => el.querySelector('.file-name').textContent), currentPath);
-    };
+        previewBody.innerHTML = `<div class="loading"><div class="spinner"></div><p>Memuat ${name}...</p></div>`;
+        preview.style.display = 'flex';
 
-    listViewBtn.onclick = () => {
-      listViewBtn.classList.add('active');
-      gridViewBtn.classList.remove('active');
-      renderFiles(Array.from(container.querySelectorAll('.file-item')).map(el => el.querySelector('.file-name').textContent), currentPath);
-    };
+        if (type === 'image') {
+            previewBody.innerHTML = `<img src="${name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2ZmZiIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOTk5Ij5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">`;
+        } else if (type === 'video') {
+            previewBody.innerHTML = `<video controls><source src="${name}" type="video/mp4">Browser tidak mendukung video.</video>`;
+        } else if (type === 'document' && name.endsWith('.pdf')) {
+            previewBody.innerHTML = `<iframe src="${name}" style="width:100%;height:80vh;"></iframe>`;
+        } else {
+            previewBody.innerHTML = `<p>Pratinjau tidak tersedia. <a href="${name}" download>Download ${name}</a></p>`;
+        }
+    }
 
-    // Inisialisasi
-    window.onload = () => {
-      // Coba pakai trik GitHub, jika gagal → pakai manual
-      loadDirectory().catch(() => {
-        // Fallback: gunakan daftar manual
-        const rootFiles = MANUAL_FILES.filter(f => !f.includes('/'));
-        renderFiles(rootFiles);
-      });
-    };
-  </script>
+    // Event
+    document.getElementById('refresh').onclick = loadFiles;
+    document.getElementById('search').oninput = () => setTimeout(loadFiles, 300);
+    document.getElementById('filter').onchange = loadFiles;
+    closeBtn.onclick = () => preview.style.display = 'none';
+    preview.onclick = (e) => { if (e.target === preview) preview.style.display = 'none'; };
+
+    // Load saat buka
+    loadFiles();
+
+    // Tambahkan Font Material Icons
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/icon?family=Material+Icons';
+    document.head.appendChild(link);
+</script>
+
 </body>
 </html>
