@@ -1,687 +1,388 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Explorer - Folder Aktual</title>
-    <style>
-        :root {
-            --primary-color: #3498db;
-            --secondary-color: #2c3e50;
-            --background-color: #f8f9fa;
-            --card-color: #ffffff;
-            --text-color: #333333;
-            --border-color: #e0e0e0;
-            --success-color: #2ecc71;
-            --warning-color: #f39c12;
-            --danger-color: #e74c3c;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>File Explorer</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root {
+      --bg: #f8f9fa;
+      --card: #ffffff;
+      --primary: #0078d4;
+      --text: #333;
+      --border: #e1e1e1;
+      --hover: #f0f0f0;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1e1e1e;
+        --card: #2d2d2d;
+        --text: #e0e0e0;
+        --border: #444;
+        --hover: #383838;
+      }
+    }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        body {
-            background-color: var(--background-color);
-            color: var(--text-color);
-            line-height: 1.6;
-            padding: 0;
-        }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 10px;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+    .header {
+      background: var(--card);
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
 
-        header {
-            background-color: var(--secondary-color);
-            color: white;
-            padding: 20px 0;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
+    .path {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
+    .path span {
+      color: var(--primary);
+      cursor: pointer;
+    }
 
-        h1 {
-            font-size: 1.8rem;
-            margin-bottom: 10px;
-        }
+    .path span:hover { text-decoration: underline; }
 
-        .search-container {
-            display: flex;
-            gap: 10px;
-            margin: 15px 0;
-            flex-wrap: wrap;
-        }
+    .back-btn {
+      background: none;
+      border: none;
+      font-size: 18px;
+      color: var(--text);
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
 
-        input, select, button {
-            padding: 10px 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            font-size: 1rem;
-        }
+    .back-btn:hover { background: var(--hover); }
 
-        input {
-            flex-grow: 1;
-            min-width: 200px;
-        }
+    .view-toggle {
+      display: flex;
+      gap: 5px;
+    }
 
-        button {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
+    .view-btn {
+      background: none;
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
 
-        button:hover {
-            background-color: #2980b9;
-        }
+    .view-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
 
-        .stats {
-            display: flex;
-            gap: 15px;
-            margin: 20px 0;
-            flex-wrap: wrap;
-        }
+    .container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
 
-        .stat-card {
-            background-color: var(--card-color);
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-            flex: 1;
-            min-width: 150px;
-            text-align: center;
-        }
+    .files-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 16px;
+    }
 
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
+    .files-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
 
-        .file-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
+    .file-item {
+      background: var(--card);
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+      user-select: none;
+    }
 
-        .file-card {
-            background-color: var(--card-color);
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
-            cursor: pointer;
-        }
+    .file-item:hover {
+      background: var(--hover);
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
 
-        .file-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-        }
+    .file-item.folder {
+      color: #ffb900;
+    }
 
-        .file-icon {
-            height: 120px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #f1f8ff;
-            color: var(--primary-color);
-            font-size: 3rem;
-        }
+    .file-item i {
+      font-size: 36px;
+      margin-bottom: 8px;
+      display: block;
+    }
 
-        .file-info {
-            padding: 15px;
-        }
+    .file-name {
+      font-size: 12px;
+      word-break: break-word;
+      margin-top: 4px;
+      color: var(--text);
+    }
 
-        .file-name {
-            font-weight: bold;
-            margin-bottom: 5px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+    .file-item.list {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: left;
+      padding: 8px 12px;
+    }
 
-        .file-details {
-            display: flex;
-            justify-content: space-between;
-            color: #666;
-            font-size: 0.9rem;
-        }
+    .file-item.list i {
+      font-size: 24px;
+      width: 30px;
+    }
 
-        .file-type {
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            margin-top: 8px;
-        }
+    .empty {
+      text-align: center;
+      padding: 40px;
+      color: #888;
+      font-size: 14px;
+    }
 
-        .type-image { background-color: #e8f5e9; color: #2e7d32; }
-        .type-document { background-color: #e3f2fd; color: #1565c0; }
-        .type-code { background-color: #f3e5f5; color: #7b1fa2; }
-        .type-audio { background-color: #fff3e0; color: #ef6c00; }
-        .type-video { background-color: #e8eaf6; color: #283593; }
-        .type-archive { background-color: #fce4ec; color: #c2185b; }
-        .type-folder { background-color: #fff9c4; color: #f57f17; }
-        .type-other { background-color: #f5f5f5; color: #616161; }
-
-        .file-preview {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .preview-content {
-            background-color: white;
-            border-radius: 8px;
-            max-width: 90%;
-            max-height: 90%;
-            overflow: auto;
-            padding: 20px;
-            position: relative;
-        }
-
-        .close-preview {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #666;
-        }
-
-        .preview-image {
-            max-width: 100%;
-            max-height: 80vh;
-        }
-
-        .preview-text {
-            white-space: pre-wrap;
-            font-family: monospace;
-            max-height: 80vh;
-            overflow: auto;
-        }
-
-        .no-files {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 20px;
-        }
-
-        .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-left-color: var(--primary-color);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-
-        .breadcrumb {
-            margin-bottom: 15px;
-            font-size: 0.9rem;
-            color: #666;
-        }
-
-        .breadcrumb a {
-            color: var(--primary-color);
-            text-decoration: none;
-        }
-
-        .breadcrumb a:hover {
-            text-decoration: underline;
-        }
-
-        .file-actions {
-            margin-top: 10px;
-            display: flex;
-            gap: 5px;
-        }
-
-        .action-btn {
-            padding: 5px 10px;
-            background-color: #f0f0f0;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
-
-        .action-btn:hover {
-            background-color: #e0e0e0;
-        }
-
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .search-container {
-                width: 100%;
-            }
-
-            input {
-                min-width: 100%;
-            }
-
-            .file-grid {
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            }
-        }
-
-        @media (max-width: 480px) {
-            .file-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .stats {
-                flex-direction: column;
-            }
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-    </style>
+    @media (max-width: 600px) {
+      .files-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 12px;
+      }
+      .header {
+        font-size: 13px;
+        padding: 10px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <div class="container">
-            <div class="header-content">
-                <h1>File Explorer</h1>
-                <p>Menampilkan file dalam folder yang sama</p>
-            </div>
-        </div>
-    </header>
 
-    <main class="container">
-        <div class="breadcrumb">
-            <span>Lokasi: <span id="currentFolder">/</span></span>
-        </div>
+  <div class="header">
+    <button class="back-btn" id="backBtn" style="display:none;">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+    <div class="path" id="pathDisplay">/</div>
+    <div class="view-toggle">
+      <button class="view-btn active" id="gridView"><i class="fas fa-th"></i></button>
+      <button class="view-btn" id="listView"><i class="fas fa-list"></i></button>
+    </div>
+  </div>
 
-        <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Cari file...">
-            <select id="typeFilter">
-                <option value="all">Semua Jenis</option>
-                <option value="image">Gambar</option>
-                <option value="document">Dokumen</option>
-                <option value="code">Kode</option>
-                <option value="audio">Audio</option>
-                <option value="video">Video</option>
-                <option value="archive">Arsip</option>
-                <option value="folder">Folder</option>
-                <option value="other">Lainnya</option>
-            </select>
-            <button id="refreshBtn">Refresh</button>
-        </div>
+  <div class="container" id="container">
+    <div class="empty">Memuat file...</div>
+  </div>
 
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-value" id="totalFiles">0</div>
-                <div>Total File</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="totalSize">0 KB</div>
-                <div>Total Ukuran</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="fileTypes">0</div>
-                <div>Jenis File</div>
-            </div>
-        </div>
+  <script>
+    // Simulasi struktur folder dari file di folder yang sama
+    const currentDir = location.pathname.split('/').slice(0, -1).join('/') || '/';
+    let history = [''];
+    let currentPath = '';
 
-        <div id="fileList" class="file-grid">
-            <div class="loading">
-                <div class="spinner"></div>
-                <p>Memuat file...</p>
-            </div>
-        </div>
+    const container = document.getElementById('container');
+    const pathDisplay = document.getElementById('pathDisplay');
+    const backBtn = document.getElementById('backBtn');
+    const gridViewBtn = document.getElementById('gridView');
+    const listViewBtn = document.getElementById('listView');
 
-        <div id="filePreview" class="file-preview">
-            <div class="preview-content">
-                <span class="close-preview">&times;</span>
-                <div id="previewContainer"></div>
-            </div>
-        </div>
-    </main>
+    // Ekstensi → ikon
+    const fileIcons = {
+      'pdf': 'fa-file-pdf',
+      'jpg|jpeg|png|gif|webp|svg': 'fa-file-image',
+      'mp4|webm|ogg': 'fa-file-video',
+      'mp3|wav': 'fa-file-audio',
+      'txt|md|log': 'fa-file-lines',
+      'zip|rar|7z': 'fa-file-zipper',
+      'doc|docx': 'fa-file-word',
+      'xls|xlsx': 'fa-file-excel',
+      'ppt|pptx': 'fa-file-powerpoint',
+      'html|htm': 'fa-globe',
+      'js': 'fa-code',
+      'css': 'fa-paint-brush',
+      'json': 'fa-brackets-curly',
+      'default': 'fa-file'
+    };
 
-    <script>
-        // Daftar file yang akan dicoba untuk dibaca
-        const fileList = [
-            'index.html',
-            'style.css',
-            'script.js',
-            'README.md',
-            'package.json',
-            'image.jpg',
-            'image.png',
-            'document.pdf',
-            'data.json',
-            'config.xml',
-            'video.mp4',
-            'audio.mp3',
-            'archive.zip',
-            'document.docx',
-            'presentation.pptx'
-        ];
+    function getIconClass(filename) {
+      const ext = filename.split('.').pop().toLowerCase();
+      for (const [exts, icon] of Object.entries(fileIcons)) {
+        if (exts.split('|').includes(ext)) return icon;
+      }
+      return filename.includes('.') ? fileIcons.default : 'fa-folder';
+    }
 
-        // Fungsi untuk memformat ukuran file
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    function isFolder(name) {
+      return !name.includes('.');
+    }
+
+    function formatSize(bytes) {
+      if (bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    async function loadDirectory(path = '') {
+      // Karena GitHub Pages statis, kita harus "hardcode" atau pakai trik
+      // Di sini kita pakai trik: baca dari <a> yang dibuat oleh GitHub
+      try {
+        const res = await fetch(location.origin + location.pathname + path);
+        const html = await res.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const links = Array.from(doc.querySelectorAll('a'))
+          .map(a => a.getAttribute('href'))
+          .filter(h => h && !h.startsWith('..') && h !== '/' && !h.endsWith('/'))
+          .map(h => h.replace(location.pathname, '').replace(/^\//, ''));
+
+        // Filter hanya file di folder ini
+        const items = links
+          .filter(name => {
+            const fullPath = path + name;
+            const depth = fullPath.split('/').filter(Boolean).length;
+            return depth === (path.split('/').filter(Boolean).length + 1);
+          });
+
+        renderFiles(items, path);
+      } catch (e) {
+        container.innerHTML = `<div class="empty">Gagal memuat folder.</div>`;
+      }
+    }
+
+    // Alternatif: Jika trik di atas gagal, gunakan daftar manual
+    const MANUAL_FILES = [
+      "gambar.jpg",
+      "dokumen.pdf",
+      "video.mp4",
+      "data.csv",
+      "Folder Ku",
+      "Folder Ku/laporan.docx",
+      "Folder Ku/presentasi.pptx"
+    ];
+
+    function renderFiles(files, path = '') {
+      currentPath = path;
+      history = history.slice(0, history.indexOf(path) + 1);
+      if (!history.includes(path)) history.push(path);
+
+      updatePathDisplay();
+      backBtn.style.display = path ? 'block' : 'none';
+
+      if (files.length === 0) {
+        container.innerHTML = `<div class="empty">Folder kosong.</div>`;
+        return;
+      }
+
+      const isGrid = gridViewBtn.classList.contains('active');
+      const wrapper = document.createElement('div');
+      wrapper.className = isGrid ? 'files-grid' : 'files-list';
+
+      files.forEach(name => {
+        const fullName = path + name;
+        const isDir = isFolder(name) || name.endsWith('/');
+        const item = document.createElement('div');
+        item.className = `file-item ${isGrid ? '' : 'list'} ${isDir ? 'folder' : ''}`;
+        
+        const icon = getIconClass(name);
+        const displayName = name.split('/').pop();
+
+        if (isGrid) {
+          item.innerHTML = `
+            <i class="fas ${icon}"></i>
+            <div class="file-name">${displayName}</div>
+          `;
+        } else {
+          item.innerHTML = `
+            <i class="fas ${icon}"></i>
+            <div style="flex:1; font-size:14px;">${displayName}</div>
+            <div style="font-size:12px; color:#888;">${isDir ? 'Folder' : 'File'}</div>
+          `;
         }
 
-        // Fungsi untuk mendapatkan ikon berdasarkan jenis file
-        function getFileIcon(fileType) {
-            const icons = {
-                'image': '🖼️',
-                'document': '📄',
-                'code': '📝',
-                'audio': '🎵',
-                'video': '🎬',
-                'archive': '📦',
-                'folder': '📁',
-                'other': '📄'
-            };
-            return icons[fileType] || icons['other'];
-        }
+        item.onclick = () => {
+          if (isDir) {
+            loadDirectory(fullName + '/');
+          } else {
+            window.open(location.href + fullName, '_blank');
+          }
+        };
 
-        // Fungsi untuk mendapatkan kelas CSS berdasarkan jenis file
-        function getFileTypeClass(fileType) {
-            return `type-${fileType}`;
-        }
+        wrapper.appendChild(item);
+      });
 
-        // Fungsi untuk menentukan jenis file berdasarkan ekstensi
-        function getFileType(filename) {
-            const ext = filename.split('.').pop().toLowerCase();
-            const imageExt = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp', 'ico'];
-            const documentExt = ['pdf', 'doc', 'docx', 'txt', 'xls', 'xlsx', 'ppt', 'pptx', 'md'];
-            const codeExt = ['js', 'css', 'html', 'htm', 'php', 'py', 'java', 'cpp', 'c', 'json', 'xml', 'ts'];
-            const audioExt = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a'];
-            const videoExt = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'mkv', 'webm'];
-            const archiveExt = ['zip', 'rar', 'tar', 'gz', '7z', 'iso'];
+      container.innerHTML = '';
+      container.appendChild(wrapper);
+    }
 
-            if (imageExt.includes(ext)) return 'image';
-            if (documentExt.includes(ext)) return 'document';
-            if (codeExt.includes(ext)) return 'code';
-            if (audioExt.includes(ext)) return 'audio';
-            if (videoExt.includes(ext)) return 'video';
-            if (archiveExt.includes(ext)) return 'archive';
-            return 'other';
-        }
+    function updatePathDisplay() {
+      const parts = currentPath.split('/').filter(Boolean);
+      const html = parts.length === 0 
+        ? '/' 
+        : parts.map((p, i) => {
+            const pathUpTo = parts.slice(0, i+1).join('/') + '/';
+            return `<span onclick="loadDirectory('${pathUpTo}')">${p}</span>`;
+          }).join(' / ');
+      pathDisplay.innerHTML = html || '/';
+    }
 
-        // Fungsi untuk membaca file menggunakan fetch
-        async function readFileInfo(filename) {
-            try {
-                // Coba baca file menggunakan fetch
-                const response = await fetch(filename);
-                
-                if (response.ok) {
-                    // File ada, dapatkan informasi
-                    const headers = response.headers;
-                    const contentLength = headers.get('content-length');
-                    const lastModified = headers.get('last-modified');
-                    
-                    return {
-                        name: filename,
-                        type: getFileType(filename),
-                        size: contentLength ? parseInt(contentLength) : 0,
-                        lastModified: lastModified ? new Date(lastModified).toLocaleDateString('id-ID') : 'Tidak diketahui',
-                        exists: true
-                    };
-                } else {
-                    // File tidak ditemukan
-                    return {
-                        name: filename,
-                        type: getFileType(filename),
-                        size: 0,
-                        lastModified: 'Tidak tersedia',
-                        exists: false
-                    };
-                }
-            } catch (error) {
-                // Error saat membaca file
-                return {
-                    name: filename,
-                    type: getFileType(filename),
-                    size: 0,
-                    lastModified: 'Tidak tersedia',
-                    exists: false
-                };
-            }
-        }
+    // Event Listeners
+    backBtn.onclick = () => {
+      if (history.length > 1) {
+        history.pop();
+        loadDirectory(history[history.length - 1]);
+      }
+    };
 
-        // Fungsi untuk membaca konten file teks
-        async function readTextFile(filename) {
-            try {
-                const response = await fetch(filename);
-                if (response.ok) {
-                    return await response.text();
-                }
-                return null;
-            } catch (error) {
-                return null;
-            }
-        }
+    gridViewBtn.onclick = () => {
+      gridViewBtn.classList.add('active');
+      listViewBtn.classList.remove('active');
+      renderFiles(Array.from(container.querySelectorAll('.file-item')).map(el => el.querySelector('.file-name').textContent), currentPath);
+    };
 
-        // Fungsi untuk menampilkan file
-        function displayFiles(files) {
-            const fileList = document.getElementById('fileList');
-            fileList.innerHTML = '';
+    listViewBtn.onclick = () => {
+      listViewBtn.classList.add('active');
+      gridViewBtn.classList.remove('active');
+      renderFiles(Array.from(container.querySelectorAll('.file-item')).map(el => el.querySelector('.file-name').textContent), currentPath);
+    };
 
-            const existingFiles = files.filter(file => file.exists);
-            
-            if (existingFiles.length === 0) {
-                fileList.innerHTML = '<div class="no-files">Tidak ada file yang ditemukan di folder ini</div>';
-                return;
-            }
-
-            existingFiles.forEach(file => {
-                const fileCard = document.createElement('div');
-                fileCard.className = 'file-card';
-                fileCard.innerHTML = `
-                    <div class="file-icon">${getFileIcon(file.type)}</div>
-                    <div class="file-info">
-                        <div class="file-name" title="${file.name}">${file.name}</div>
-                        <div class="file-details">
-                            <span>${formatFileSize(file.size)}</span>
-                            <span>${file.lastModified}</span>
-                        </div>
-                        <div class="file-type ${getFileTypeClass(file.type)}">${file.type.toUpperCase()}</div>
-                        <div class="file-actions">
-                            <button class="action-btn" onclick="previewFile('${file.name}')">Pratinjau</button>
-                            <button class="action-btn" onclick="downloadFile('${file.name}')">Download</button>
-                        </div>
-                    </div>
-                `;
-                
-                fileList.appendChild(fileCard);
-            });
-        }
-
-        // Fungsi untuk memfilter file berdasarkan pencarian dan jenis
-        function filterFiles(files) {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const typeFilter = document.getElementById('typeFilter').value;
-            
-            let filteredFiles = files.filter(file => 
-                file.name.toLowerCase().includes(searchTerm)
-            );
-            
-            if (typeFilter !== 'all') {
-                filteredFiles = filteredFiles.filter(file => file.type === typeFilter);
-            }
-            
-            displayFiles(filteredFiles);
-            updateStats(filteredFiles);
-        }
-
-        // Fungsi untuk memperbarui statistik
-        function updateStats(files) {
-            const existingFiles = files.filter(file => file.exists);
-            
-            document.getElementById('totalFiles').textContent = existingFiles.length;
-            
-            const totalSize = existingFiles.reduce((sum, file) => sum + file.size, 0);
-            document.getElementById('totalSize').textContent = formatFileSize(totalSize);
-            
-            const uniqueTypes = new Set(existingFiles.map(file => file.type));
-            document.getElementById('fileTypes').textContent = uniqueTypes.size;
-        }
-
-        // Fungsi untuk menampilkan pratinjau file
-        async function previewFile(filename) {
-            const preview = document.getElementById('filePreview');
-            const container = document.getElementById('previewContainer');
-            
-            container.innerHTML = `
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <p>Memuat pratinjau...</p>
-                </div>
-            `;
-            
-            preview.style.display = 'flex';
-            
-            const fileType = getFileType(filename);
-            let previewContent = '';
-            
-            if (fileType === 'image') {
-                // Pratinjau gambar
-                previewContent = `
-                    <h2>${filename}</h2>
-                    <p><strong>Jenis:</strong> Gambar</p>
-                    <img src="${filename}" class="preview-image" alt="${filename}">
-                    <p><em>Klik di luar area ini untuk menutup</em></p>
-                `;
-            } else if (fileType === 'code' || fileType === 'document') {
-                // Pratinjau file teks
-                const content = await readTextFile(filename);
-                if (content) {
-                    previewContent = `
-                        <h2>${filename}</h2>
-                        <p><strong>Jenis:</strong> ${fileType === 'code' ? 'Kode' : 'Dokumen'}</p>
-                        <div class="preview-text">${escapeHtml(content.substring(0, 5000))}</div>
-                        ${content.length > 5000 ? '<p><em>Halaman 1 dari konten (dibatasi 5000 karakter)</em></p>' : ''}
-                        <p><em>Klik di luar area ini untuk menutup</em></p>
-                    `;
-                } else {
-                    previewContent = `
-                        <h2>${filename}</h2>
-                        <p><strong>Jenis:</strong> ${fileType === 'code' ? 'Kode' : 'Dokumen'}</p>
-                        <p>Tidak dapat membaca konten file.</p>
-                        <p><em>Klik di luar area ini untuk menutup</em></p>
-                    `;
-                }
-            } else {
-                // File tidak dapat dipratinjau
-                previewContent = `
-                    <h2>${filename}</h2>
-                    <p><strong>Jenis:</strong> ${fileType}</p>
-                    <p>Pratinjau tidak tersedia untuk jenis file ini.</p>
-                    <p>Gunakan tombol "Download" untuk mengunduh file.</p>
-                    <p><em>Klik di luar area ini untuk menutup</em></p>
-                `;
-            }
-            
-            container.innerHTML = previewContent;
-        }
-
-        // Fungsi untuk mengunduh file
-        function downloadFile(filename) {
-            const link = document.createElement('a');
-            link.href = filename;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        // Fungsi untuk escape HTML
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // Fungsi utama untuk memuat file
-        async function loadFiles() {
-            document.getElementById('fileList').innerHTML = `
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <p>Memindai folder...</p>
-                </div>
-            `;
-            
-            // Baca informasi untuk semua file
-            const filePromises = fileList.map(filename => readFileInfo(filename));
-            const files = await Promise.all(filePromises);
-            
-            // Tampilkan file yang ada
-            filterFiles(files);
-        }
-
-        // Inisialisasi saat halaman dimuat
-        document.addEventListener('DOMContentLoaded', function() {
-            loadFiles();
-            
-            // Event listener untuk pencarian
-            document.getElementById('searchInput').addEventListener('input', () => {
-                // Reload files untuk menerapkan filter
-                loadFiles();
-            });
-            
-            // Event listener untuk filter jenis
-            document.getElementById('typeFilter').addEventListener('change', () => {
-                // Reload files untuk menerapkan filter
-                loadFiles();
-            });
-            
-            // Event listener untuk tombol refresh
-            document.getElementById('refreshBtn').addEventListener('click', loadFiles);
-            
-            // Event listener untuk menutup pratinjau
-            document.querySelector('.close-preview').addEventListener('click', function() {
-                document.getElementById('filePreview').style.display = 'none';
-            });
-            
-            // Event listener untuk menutup pratinjau saat mengklik di luar
-            document.getElementById('filePreview').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.style.display = 'none';
-                }
-            });
-        });
-    </script>
+    // Inisialisasi
+    window.onload = () => {
+      // Coba pakai trik GitHub, jika gagal → pakai manual
+      loadDirectory().catch(() => {
+        // Fallback: gunakan daftar manual
+        const rootFiles = MANUAL_FILES.filter(f => !f.includes('/'));
+        renderFiles(rootFiles);
+      });
+    };
+  </script>
 </body>
 </html>
